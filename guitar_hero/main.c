@@ -16,11 +16,18 @@
 #include <util/delay.h>
 #include <stdlib.h>
 #include "nokia5110.h"
+#define PD0 red_led
+#define PD1 yellow_led
+#define PD2 green_led
 
 uint8_t glyph[] = {0b00010000, 0b00100100, 0b11100000, 0b00100100, 0b00010000};
 
 int main(void)
 {
+    DDRB &= ~((1 << PB1) | (1 << PB2) | (1 << PB3)); //seta pinos de entrada PB1,PB2 e PB3
+    DDRD |= (1<<red_led) | (1<<yellow_led) | (1<<green_led); //seta pinos de saida (leds)
+
+
     nokia_lcd_init();
     nokia_lcd_clear();
     nokia_lcd_custom(1, glyph);
