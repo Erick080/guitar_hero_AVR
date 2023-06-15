@@ -24,13 +24,14 @@ int main(void)
     nokia_lcd_init();
     nokia_lcd_clear();
     nokia_lcd_custom(1, glyph);
-    // nokia_lcd_write_string("IT'S WORKING!",1);
-    // nokia_lcd_set_cursor(0, 12);
-    // nokia_lcd_write_string("Nice!\001", 2);
-    // nokia_lcd_drawcircle(20,20,20);
-    // nokia_lcd_render();
-    // while(1);
-    while (1)
+    //nokia_lcd_write_string("IT'S WORKING!",1);
+    //nokia_lcd_set_cursor(0, 12);
+    //nokia_lcd_write_string("Nice!\001", 2);
+    nokia_lcd_drawcircle(5,5,5);
+    nokia_lcd_render();
+     while(1);
+   
+   /* while (1)
     {
         nokia_lcd_clear();
         for (int i = 0; i < 20; i++)
@@ -47,5 +48,5 @@ int main(void)
         }
         nokia_lcd_render();
         // _delay_ms(100);
-    }
+    }*/
 }
