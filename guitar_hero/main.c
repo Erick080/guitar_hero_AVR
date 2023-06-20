@@ -28,6 +28,16 @@ ISR(TIMER1_COMPA_vect){ //a cada segundo incrementa timer
     interrupt++;if(interrupt >= 10){interrupt = 0;timer++;}
 }
 
+void interface(){
+ //implementar os botoes e score
+}
+
+void game_over(){
+    nokia_lcd_clear();
+    nokia_lcd_set_cursor(0,12);
+    nokia_lcd_write_string("Game Over",2);
+    nokia_lcd_render();
+}
 int main(void)
 {
     cli(); // desabilita interrupções
@@ -56,21 +66,34 @@ int main(void)
     //nokia_lcd_write_string("IT'S WORKING!",1);
     //nokia_lcd_set_cursor(0, 12);
     //nokia_lcd_write_string("Nice!\001", 2);
-    nokia_lcd_drawcircle(5,5,5);
-    nokia_lcd_render();
+    
+    
+    //nokia_lcd_drawcircle(66,5,5);
+    //nokia_lcd_render();
+    
+    //p/ notas descerem na tela
+    for(int x = 22;x <= 66;x+=22){
+        for(int y = 5;y < 30;y++){
+            nokia_lcd_clear();
+            nokia_lcd_drawcircle(x,y,5);
+            nokia_lcd_render();
+            _delay_ms(100);
+        }
+    }
+    game_over();
     PORTD  = 0b111;
      while(1){
-        sei();
+        //sei();
         if(!(PINB & (1 << PB1))){
             nokia_lcd_clear();
             nokia_lcd_write_string("Botao apertado",1);
             nokia_lcd_render();
         } while(!(PINB & (1 << PB1))) _delay_ms(1);
-        if(timer >=10){
+        /*if(timer >=10){
             nokia_lcd_clear();
             nokia_lcd_write_string("Acabou o tempo",1);
             nokia_lcd_render();
-        }
+        }*/
         
      };
    
