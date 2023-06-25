@@ -20,9 +20,12 @@
 #define TIMER_CLK		F_CPU / 1024
 #define FREQ 10 // frequencias para setar timer q estora 10x por segundo
 int interrupt;
-int timer;
+float timer; 
+char segundos [4];//timer em string
+int hit;
+int miss;
 
-uint8_t glyph[] = {0b00010000, 0b00100100, 0b11100000, 0b00100100, 0b00010000};
+
 
 ISR(TIMER1_COMPA_vect){ //a cada segundo incrementa timer
     interrupt++;if(interrupt >= 10){interrupt = 0;timer++;}
@@ -35,14 +38,25 @@ void interface(){
 void game_over(){
     nokia_lcd_clear();
     nokia_lcd_set_cursor(0,12);
-    nokia_lcd_write_string("Game Over",2);
+    nokia_lcd_write_string("Game Over",1);
     nokia_lcd_render();
+
+}
+
+int verifica_acerto(int coluna){
+    int s = timer +0.8;
+    while(s >= timer){
+        if(!(PINB & (1 << coluna))){hit++;return 1;}
+        dtostrf(timer,4,2,segundos);
+    }
+    miss++;
+    return 0;
 }
 int main(void)
 {
     cli(); // desabilita interrupções
     DDRB &= ~((1 << PB1) | (1 << PB2) | (1 << PB3)); //seta pinos de entrada PB1,PB2 e PB3
-    PORTB |= (1 << PB0) | (1 << PB1)| (1 << PB2); //habilita pull-up
+    PORTB |= (1 << PB1) | (1 << PB2)| (1 << PB3); //habilita pull-up
     DDRD |= (1<<PD0) | (1<<PD1) | (1<<PD2); //seta pinos de saida (leds)
 
     //-----configuracoes para habilitar interrupcoes-------
@@ -61,41 +75,27 @@ int main(void)
     //-------------------------------------
 
     nokia_lcd_init();
-    nokia_lcd_clear();
-    nokia_lcd_custom(1, glyph);
-    //nokia_lcd_write_string("IT'S WORKING!",1);
-    //nokia_lcd_set_cursor(0, 12);
-    //nokia_lcd_write_string("Nice!\001", 2);
+    sei();
+    interrupt = 0;
+    timer = 0;
     
-    
-    //nokia_lcd_drawcircle(66,5,5);
-    //nokia_lcd_render();
-    
-    //p/ notas descerem na tela
-    for(int x = 22;x <= 66;x+=22){
-        for(int y = 5;y < 30;y++){
-            nokia_lcd_clear();
-            nokia_lcd_drawcircle(x,y,5);
-            nokia_lcd_render();
-            _delay_ms(100);
-        }
-    }
-    game_over();
-    PORTD  = 0b111;
-     while(1){
-        //sei();
-        if(!(PINB & (1 << PB1))){
-            nokia_lcd_clear();
-            nokia_lcd_write_string("Botao apertado",1);
-            nokia_lcd_render();
-        } while(!(PINB & (1 << PB1))) _delay_ms(1);
-        /*if(timer >=10){
-            nokia_lcd_clear();
-            nokia_lcd_write_string("Acabou o tempo",1);
-            nokia_lcd_render();
-        }*/
+    while(1){
+        //p/ notas descerem na tela
+        for(int x = 22;x <= 66;x+=22){
+            for(int y = 5;y < 40;y+=5){
+                nokia_lcd_clear();
+                nokia_lcd_drawcircle(x,y,5);
+                dtostrf(timer,4,2,segundos);
+                nokia_lcd_write_string(segundos,1);
+                nokia_lcd_render();
+                _delay_ms(500);
+            }
+            //verifica se acertou a nota
+            verifica_acerto(1);    
         
-     };
+    }
+        
+     }
    
 
 
