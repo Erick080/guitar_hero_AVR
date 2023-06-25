@@ -24,6 +24,7 @@ float timer;
 char segundos [4];//timer em string
 int hit;
 int miss;
+float ratio;
 
 
 
@@ -44,13 +45,20 @@ void game_over(){
 }
 
 int verifica_acerto(int coluna){
-    int s = timer +0.8;
+    int s = timer +1.0;
+    coluna = 4 - coluna;
     while(s >= timer){
-        if(!(PINB & (1 << coluna))){hit++;return 1;}
         dtostrf(timer,4,2,segundos);
+        if(!(PINB & (1 << coluna))){
+            while(!(PINB & (1 << coluna))){_delay_ms(1);}
+            hit++;
+            //PORTD ^= 0b100;
+            return 1;
+        }
+        
     }
     miss++;
-    return 0;
+    if(miss > hit * 4) return 0; else return 1; //detecta se porcentagem for menor q 25%
 }
 int main(void)
 {
@@ -78,26 +86,30 @@ int main(void)
     sei();
     interrupt = 0;
     timer = 0;
+    miss = 1;
+    hit = 1;
     
-    while(1){
+    while(timer <= 40){
         //p/ notas descerem na tela
-        for(int x = 22;x <= 66;x+=22){
+            int random = (rand() % 3) + 1; //gera numero de 1 a 3
+            int x = 22 * random;
             for(int y = 5;y < 40;y+=5){
                 nokia_lcd_clear();
                 nokia_lcd_drawcircle(x,y,5);
-                dtostrf(timer,4,2,segundos);
+                dtostrf(40 - timer,4,2,segundos);
                 nokia_lcd_write_string(segundos,1);
                 nokia_lcd_render();
                 _delay_ms(500);
+
             }
             //verifica se acertou a nota
-            verifica_acerto(1);    
-        
-    }
-        
-     }
+            if(verifica_acerto(random) == 0){game_over();break;}; //se porcentagem de acertos < 25% acaba o jogo    
+            
    
 
+
+
+    
 
 
    /* while (1)
@@ -118,4 +130,5 @@ int main(void)
         nokia_lcd_render();
         // _delay_ms(100);
     }*/
+}
 }
