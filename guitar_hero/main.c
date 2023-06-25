@@ -22,9 +22,10 @@
 int interrupt;
 float timer; 
 char segundos [4];//timer em string
-int hit;
-int miss;
+float hit;
+float miss;
 float ratio;
+char win_condition;
 
 
 
@@ -33,7 +34,14 @@ ISR(TIMER1_COMPA_vect){ //a cada segundo incrementa timer
 }
 
 void interface(){
- //implementar os botoes e score
+    //linhas verticais
+ nokia_lcd_drawline(55,5,55,42);
+ nokia_lcd_drawline(30,5,30,42);
+    //botoes de hitbox
+ nokia_lcd_drawcircle(22,41,3);
+ nokia_lcd_drawcircle(42,41,3);
+ nokia_lcd_drawcircle(64,41,3);
+ nokia_lcd_render();
 }
 
 void game_over(){
@@ -44,22 +52,39 @@ void game_over(){
 
 }
 
+void game_win(){
+    nokia_lcd_clear();
+    nokia_lcd_set_cursor(0,12);
+    nokia_lcd_write_string("You Win!",1);
+    nokia_lcd_render();
+}
+
 int verifica_acerto(int coluna){
-    int s = timer +1.0;
+    int s = timer +0.6;
     coluna = 4 - coluna;
     while(s >= timer){
         dtostrf(timer,4,2,segundos);
         if(!(PINB & (1 << coluna))){
-            while(!(PINB & (1 << coluna))){_delay_ms(1);}
             hit++;
-            //PORTD ^= 0b100;
+            while(!(PINB & (1 << coluna))){_delay_ms(1);}
             return 1;
         }
         
     }
     miss++;
-    if(miss > hit * 4) return 0; else return 1; //detecta se porcentagem for menor q 25%
+    if(miss >= (hit * 4)) return 0; else return 1; //detecta se porcentagem for menor q 25%
 }
+
+void led_config(float r){
+    if(r >= 0.70){
+        PORTD = 0b100;
+    }else if(r >= 0.50 && r < 0.70){
+        PORTD = 0b010;
+    }else if (r > 0.25 && r < 0.50){
+        PORTD = 0b001;
+    }
+}
+
 int main(void)
 {
     cli(); // desabilita interrupções
@@ -76,59 +101,35 @@ int main(void)
 	TCCR1B |= (1 << CS12) | (1 << CS10);  // seta CS10 e CS12 para prescaler 1024
 	TIMSK1 |= (1 << OCIE1A); // habilita máscara do timer1
     
-    //caso seja necessario adicionar um botao p/ interrupcao
-    /*EICRA = (1 << ISC01) | (1 << ISC00);  // interrupt sense control, borda de subida (rising edge) para INT0
-    EICRA |= (1 << ISC11) | (0 << ISC10); // interrupt sense control, borda de descida (falling edge) para INT1
-    EIMSK |= (1 << INT1) | (1 << INT0); */  // enable INT1 and INT0
-    //-------------------------------------
 
     nokia_lcd_init();
     sei();
     interrupt = 0;
     timer = 0;
-    miss = 1;
+    miss = 0;
     hit = 1;
+    win_condition = 1;
     
-    while(timer <= 40){
-        //p/ notas descerem na tela
+    while(timer < 60){
             int random = (rand() % 3) + 1; //gera numero de 1 a 3
             int x = 22 * random;
             for(int y = 5;y < 40;y+=5){
                 nokia_lcd_clear();
+                interface();
                 nokia_lcd_drawcircle(x,y,5);
-                dtostrf(40 - timer,4,2,segundos);
+                dtostrf(60 - timer,4,0,segundos);
                 nokia_lcd_write_string(segundos,1);
                 nokia_lcd_render();
                 _delay_ms(500);
 
             }
             //verifica se acertou a nota
-            if(verifica_acerto(random) == 0){game_over();break;}; //se porcentagem de acertos < 25% acaba o jogo    
-            
-   
-
-
-
-    
-
-
-   /* while (1)
-    {
-        nokia_lcd_clear();
-        for (int i = 0; i < 20; i++)
-        {
-            uint8_t x1, y1, x2, y2;
-            x1 = rand() % 84;
-            y1 = rand() % 48;
-            x2 = rand() % 84;
-            y2 = rand() % 48;
-            // uint8_t r = rand() % 10;
-            nokia_lcd_drawline(x1, y1, x2, y2);
-            // nokia_lcd_drawrect(x1, y1, x2, y2);
-            // nokia_lcd_drawcircle(x1, y1, r);
+            if(verifica_acerto(random) == 0){win_condition = 0;break;}; //se porcentagem de acertos < 25% acaba o jogo    
+            ratio = hit / (hit + miss);
+            led_config(ratio); //acende led de acordo com quantidade de acertos 
         }
-        nokia_lcd_render();
-        // _delay_ms(100);
-    }*/
-}
+
+    //resultado do fim de jogo
+    if(win_condition == 0){game_over();}
+        else{game_win();}
 }
