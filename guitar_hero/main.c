@@ -32,7 +32,6 @@ char win_condition;
 
 ISR(TIMER1_COMPA_vect){ //a cada segundo incrementa timer
     interrupt++;
-    //count+=1;
     if(interrupt >= 10){interrupt = 0;timer++;}
 }
 
@@ -78,7 +77,7 @@ int verifica_acerto(int coluna){
         dtostrf(timer,4,2,segundos);
         if(!(PINB & (1 << coluna))){
             hit++;
-            while(!(PINB & (1 << coluna))){_delay_ms(1);}
+            //while(!(PINB & (1 << coluna))){_delay_ms(1);}
             return 1;
         }
         
@@ -95,8 +94,6 @@ void led_config(float r){
         PORTD = 0b010;
     }else if (r > 0.25 && r < 0.50){
         PORTD = 0b001;
-    } else if(r <= 0.25){
-        PORTD = 0b111;
     }
 }
 
@@ -127,6 +124,7 @@ int main(void)
 
 
     sei();
+    srand(interrupt); //gera seed de numeros aleatorios novo td vez q executa
     interrupt = 0;
     timer = 0;
     miss = 0;
