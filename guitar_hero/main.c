@@ -33,6 +33,13 @@ ISR(TIMER1_COMPA_vect){ //a cada segundo incrementa timer
     interrupt++;if(interrupt >= 10){interrupt = 0;timer++;}
 }
 
+void menu(){
+    nokia_lcd_write_string("---GUITAR HERO",1);
+    nokia_lcd_set_cursor(0,20);
+    nokia_lcd_write_string("Aperte 1 p/ iniciar",1);
+    nokia_lcd_render();
+}
+
 void interface(){
     //linhas verticais
  nokia_lcd_drawline(55,5,55,42);
@@ -103,6 +110,14 @@ int main(void)
     
 
     nokia_lcd_init();
+
+    //menu inicial
+    menu();
+    while((PINB & (1 << PB3))){
+        _delay_ms(5);
+    }
+
+
     sei();
     interrupt = 0;
     timer = 0;
