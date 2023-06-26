@@ -20,6 +20,7 @@
 #define TIMER_CLK		F_CPU / 1024
 #define FREQ 10 // frequencias para setar timer q estora 10x por segundo
 int interrupt;
+//char count;
 float timer; 
 char segundos [4];//timer em string
 float hit;
@@ -30,13 +31,15 @@ char win_condition;
 
 
 ISR(TIMER1_COMPA_vect){ //a cada segundo incrementa timer
-    interrupt++;if(interrupt >= 10){interrupt = 0;timer++;}
+    interrupt++;
+    //count+=1;
+    if(interrupt >= 10){interrupt = 0;timer++;}
 }
 
 void menu(){
     nokia_lcd_write_string("---GUITAR HERO",1);
     nokia_lcd_set_cursor(0,20);
-    nokia_lcd_write_string("Aperte 1 p/ ",1);
+    nokia_lcd_write_string("Aperte A p/ ",1);
     nokia_lcd_set_cursor(0,40);
     nokia_lcd_write_string("iniciar",1);
     nokia_lcd_render();
@@ -81,7 +84,8 @@ int verifica_acerto(int coluna){
         
     }
     miss++;
-    if(miss >= (hit * 4)) return 0; else return 1; //detecta se porcentagem for menor q 25%
+    ratio = hit/(hit + miss);
+    if(ratio <= 0.25f && timer > 5) return 0; else return 1; //detecta se porcentagem for menor q 25%
 }
 
 void led_config(float r){
@@ -91,6 +95,8 @@ void led_config(float r){
         PORTD = 0b010;
     }else if (r > 0.25 && r < 0.50){
         PORTD = 0b001;
+    } else if(r <= 0.25){
+        PORTD = 0b111;
     }
 }
 
@@ -124,7 +130,7 @@ int main(void)
     interrupt = 0;
     timer = 0;
     miss = 0;
-    hit = 1;
+    hit = 0;
     win_condition = 1;
     
     while(timer < 60){
@@ -137,7 +143,8 @@ int main(void)
                 dtostrf(60 - timer,4,0,segundos);
                 nokia_lcd_write_string(segundos,1);
                 nokia_lcd_render();
-                _delay_ms(500);
+                if(timer > 60){break;}
+               _delay_ms(500);
 
             }
             //verifica se acertou a nota
