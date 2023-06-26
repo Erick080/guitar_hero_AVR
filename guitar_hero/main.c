@@ -36,7 +36,9 @@ ISR(TIMER1_COMPA_vect){ //a cada segundo incrementa timer
 void menu(){
     nokia_lcd_write_string("---GUITAR HERO",1);
     nokia_lcd_set_cursor(0,20);
-    nokia_lcd_write_string("Aperte 1 p/ iniciar",1);
+    nokia_lcd_write_string("Aperte 1 p/ ",1);
+    nokia_lcd_set_cursor(0,40);
+    nokia_lcd_write_string("iniciar",1);
     nokia_lcd_render();
 }
 
